@@ -1,16 +1,50 @@
-# streamlit run app.py
 import os
-import streamlit as st  # Streamlit库，用于创建Web应用
+import streamlit as st
 import pandas as pd
 from collections import Counter
 from bs4 import BeautifulSoup
 import requests
-import matplotlib.pyplot as plt  # Matplotlib库，用于绘制各种图表
-from wordcloud import WordCloud  # WordCloud库，用于生成词云图
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
 import jieba
-import seaborn as sns  # Seaborn库，用于绘制统计图表
-import plotly.express as px  # Plotly库，用于交互式图表
+import seaborn as sns
+import plotly.express as px
 import numpy as np
+from matplotlib import font_manager
+
+# 获取当前脚本所在的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 指定SimHei字体文件的相对路径
+font_path = os.path.join(current_dir, 'SimHei.ttf')
+
+# 打印字体文件路径以确认
+st.write(f"Font path: {font_path}")
+
+# 检查文件是否存在
+if not os.path.exists(font_path):
+    st.error("字体文件未找到，请检查字体文件路径。")
+else:
+    # 添加字体到matplotlib
+    try:
+        font_manager.fontManager.addfont(font_path)
+        plt.rcParams['font.family'] = ['SimHei']
+        plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+        st.success("字体文件加载成功！")
+    except Exception as e:
+        st.error(f"加载字体文件时出错: {e}")
+
+# 全局设置Seaborn的字体
+sns.set(font="SimHei", style="whitegrid")
+
+# 对于Plotly，我们需要在每次创建图表时单独设置字体，因为Plotly不支持全局字体设置
+def update_plotly_layout(fig):
+    fig.update_layout(
+        font=dict(
+            family="SimHei",
+            size=14,
+            color="black"
+        )
+    )
 
 # 获取页面内容并解析正文
 def get_words(url):
@@ -27,17 +61,16 @@ def get_words(url):
 # 使用WordCloud库绘制词云图
 def plot_wordcloud_wordcloud(top_n_words):
     frequencies = {word: count for word, count in top_n_words.items()}
-    wordcloud = WordCloud(font_path='SimHei.ttf', background_color='white', width=800, height=600).generate_from_frequencies(frequencies)
+    wordcloud = WordCloud(font_path=font_path, background_color='white', width=800, height=600).generate_from_frequencies(frequencies)
 
     # 将词云图显示为图片，并调整图片大小
-    img = plt.imshow(wordcloud, interpolation='bilinear')
+    plt.figure(figsize=(12, 8))
+    plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
-    st.pyplot(img.figure)  # 使用Streamlit显示图表
+    st.pyplot(plt.gcf())  # 使用Streamlit显示图表
 
 # 使用Matplotlib库绘制纵向柱状图
 def plot_bar_chart_vertical_matplotlib(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
     df = df.sort_values(by='词频', ascending=False)  # 降序排列数据
@@ -51,8 +84,6 @@ def plot_bar_chart_vertical_matplotlib(top_n_words):
 
 # 使用Matplotlib库绘制横向柱状图
 def plot_bar_chart_horizontal_matplotlib(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
     df = df.sort_values(by='词频', ascending=True)  # 升序排列数据
@@ -66,8 +97,6 @@ def plot_bar_chart_horizontal_matplotlib(top_n_words):
 
 # 使用Matplotlib库绘制折线图
 def plot_line_chart_matplotlib(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
 
@@ -80,8 +109,6 @@ def plot_line_chart_matplotlib(top_n_words):
 
 # 使用Matplotlib库绘制散点图
 def plot_scatter_chart_matplotlib(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
 
@@ -94,12 +121,10 @@ def plot_scatter_chart_matplotlib(top_n_words):
 
 # 使用Matplotlib库绘制饼状图
 def plot_pie_chart_matplotlib(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     labels = list(top_n_words.keys())
     sizes = list(top_n_words.values())
     fig, ax = plt.subplots(figsize=(8, 8))
-    wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.1%%', startangle=90, colors=plt.cm.Paired.colors)
+    wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
     ax.axis('equal')  
 
     # 添加图例
@@ -113,8 +138,6 @@ def plot_pie_chart_matplotlib(top_n_words):
 
 # 使用Seaborn库绘制箱线图
 def plot_box_plot_seaborn(top_n_words):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
 
@@ -130,11 +153,11 @@ def plot_interactive_bar_chart_plotly(top_n_words):
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
     fig = px.bar(df, x='关键词', y='词频', title='关键词频率分析', labels={'关键词': '关键词', '词频': '词频'})
+    update_plotly_layout(fig)
     st.plotly_chart(fig)  # 使用Streamlit显示Plotly图表
 
 # 提取正文文本，以utf-8编码写入txt文件
 def extract_and_write_text(text, base_file_name='news'):
-    current_dir = os.path.dirname(__file__)
     output_folder = os.path.join(current_dir, 'output_files')
     os.makedirs(output_folder, exist_ok=True)  
 
