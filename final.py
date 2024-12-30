@@ -27,7 +27,7 @@ def get_words(url):
 # 使用WordCloud库绘制词云图
 def plot_wordcloud_wordcloud(top_n_words):
     frequencies = {word: count for word, count in top_n_words.items()}
-    wordcloud = WordCloud(font_path='C:\\Users\\hw\\Desktop\\作业\\python实训\\交互式文本分析Web应用\\SimHei.ttf', background_color='white', width=800, height=600).generate_from_frequencies(frequencies)
+    wordcloud = WordCloud(font_path='SimHei.ttf', background_color='white', width=800, height=600).generate_from_frequencies(frequencies)
 
     # 将词云图显示为图片，并调整图片大小
     img = plt.imshow(wordcloud, interpolation='bilinear')
@@ -37,7 +37,7 @@ def plot_wordcloud_wordcloud(top_n_words):
 # 使用Matplotlib库绘制纵向柱状图
 def plot_bar_chart_vertical_matplotlib(top_n_words):
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['C:\\Users\\hw\\Desktop\\作业\\python实训\\交互式文本分析Web应用\\SimHei.ttf']  # 设置字体路径
+    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
     df = df.sort_values(by='词频', ascending=False)  # 降序排列数据
@@ -52,7 +52,7 @@ def plot_bar_chart_vertical_matplotlib(top_n_words):
 # 使用Matplotlib库绘制横向柱状图
 def plot_bar_chart_horizontal_matplotlib(top_n_words):
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['C:\\Users\\hw\\Desktop\\作业\\python实训\\交互式文本分析Web应用\\SimHei.ttf']  # 设置字体路径
+    plt.rcParams['font.sans-serif'] = ['SimHei.ttf']  # 设置字体路径
     data = {'关键词': list(top_n_words.keys()), '词频': list(top_n_words.values())}
     df = pd.DataFrame(data)
     df = df.sort_values(by='词频', ascending=True)  # 升序排列数据
